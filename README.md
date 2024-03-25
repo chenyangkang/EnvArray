@@ -10,13 +10,13 @@ Efficient daily environmental data processing and annotation with Xarray and net
 - [x] 3. Query example
 - [x] 4. Resampling example (up and down)
 
-### For land cover data
+### For land cover data (https://lpdaac.usgs.gov/products/mcd12q1v061/)
 - [] 1. Script for downloading data
 - [] 2. Loading data into Xarray
 - [] 3. Query example
 - [] 4. Resampling example (up and down)
 
-### For MODIS NDVI data
+### For MODIS NDVI data (https://lpdaac.usgs.gov/products/mod13a2v061/)
 - [] 1. Script for downloading data
 - [] 2. Loading data into Xarray
 - [] 3. Query example
