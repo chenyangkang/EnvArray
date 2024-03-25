@@ -24,7 +24,7 @@ Efficient daily environmental data processing and annotation with Xarray and net
 
 ### For Topography data (EarthEnv, https://www.earthenv.org)
 
-https://data.earthenv.org/topography/elevation_5KMmn_GMTEDmd.tif
+https://data.earthenv.org/topography/elevation_5KMmn_GMTEDmn.tif
 https://data.earthenv.org/topography/slope_5KMmn_GMTEDmd.tif
 https://data.earthenv.org/topography/eastness_5KMmn_GMTEDmd.tif
 https://data.earthenv.org/topography/northness_5KMmn_GMTEDmd.tif
