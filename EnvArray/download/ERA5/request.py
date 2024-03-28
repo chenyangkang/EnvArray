@@ -13,7 +13,6 @@ def get_all_dates(start_date, end_date):
     request_df['year'] = request_df.date.dt.year
     request_df['month'] = [str(i).split('-')[-2] for i in request_df.date.dt.date]
     request_df['day'] = [str(i).split('-')[-1] for i in request_df.date.dt.date]
-    print(request_df)
     request_df = request_df[
         (request_df['date']>=pd.to_datetime(start_date)) & (request_df['date']<=pd.to_datetime(end_date))
     ]
