@@ -28,7 +28,7 @@ def get_data(year,month,subsub,output_folder):
             'format': 'netcdf',
             'variable':[
                 '10m_u_component_of_wind', '10m_v_component_of_wind', '2m_temperature',
-                'surface_pressure', 'total_cloud_cover', 'total_precipitation',
+                'surface_pressure', 'total_cloud_cover', 'total_precipitation','snow_cover','lack_ice_depth'
             ],
             'year':str(year),
             'month':month,
@@ -48,4 +48,21 @@ def get_ERA5_data_and_process(start_date, end_date, time_interval, spatial_resol
         for month in sub.month.unique():
             subsub = sub[sub.month==month]
             get_data(year,month,subsub,output_folder)
+            process_ERA5(year, month, time_interval, spatial_resolution, output_folder) # aggregate to 1 day and 50 km
+
+
+def get_ERA5_data(start_date, end_date, time_interval, spatial_resolution, output_folder):
+    date_df = get_all_dates(start_date, end_date)
+    for year in date_df.year.unique():
+        sub = date_df[date_df.year==year]
+        for month in sub.month.unique():
+            subsub = sub[sub.month==month]
+            get_data(year,month,subsub,output_folder)
+
+def ERA5_process(start_date, end_date, time_interval, spatial_resolution, output_folder):
+    date_df = get_all_dates(start_date, end_date)
+    for year in date_df.year.unique():
+        sub = date_df[date_df.year==year]
+        for month in sub.month.unique():
+            subsub = sub[sub.month==month]
             process_ERA5(year, month, time_interval, spatial_resolution, output_folder) # aggregate to 1 day and 50 km
