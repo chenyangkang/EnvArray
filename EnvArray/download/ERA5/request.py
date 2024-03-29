@@ -57,17 +57,22 @@ def get_ERA5_data_and_process(start_date, end_date, time_interval, spatial_resol
             subsub = sub[sub.month==month]
             for day in subsub.day.unique():
 
-                get_data(str(year),
-                         str(month).zfill(2),
-                         str(day).zfill(2),
-                         output_folder)
-                
-                process_ERA5(str(year), 
-                             str(month).zfill(2), 
-                             str(day).zfill(2), 
-                             time_interval, 
-                             spatial_resolution, 
-                             output_folder) # aggregate to 1 day and 30 km
+                try:
+                    get_data(str(year),
+                            str(month).zfill(2),
+                            str(day).zfill(2),
+                            output_folder)
+                    
+                    process_ERA5(str(year), 
+                                str(month).zfill(2), 
+                                str(day).zfill(2), 
+                                time_interval, 
+                                spatial_resolution, 
+                                output_folder) # aggregate to 1 day and 30 km
+                    
+                except Exception as e:
+                    print(e)
+                    continue
 
 
 # def get_ERA5_data(start_date, end_date, time_interval, spatial_resolution, output_folder):
