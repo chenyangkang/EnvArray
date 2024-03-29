@@ -22,7 +22,7 @@ class ERA5DataDownloaderProcessor:
         # check output folder
         os.makedirs(self.output_folder, exist_ok=True)
         
-        
+
     def get_all_dates(self):
         date_list = [datetime.datetime.strptime('1970-01-01','%Y-%m-%d')+datetime.timedelta(days=i) for i in range(99999)]
         request_df = pd.DataFrame(pd.Series(date_list,name='date'))
@@ -76,12 +76,10 @@ class ERA5DataDownloaderProcessor:
             self.get_data(year, month, day)
             
             # Assuming process_ERA5 is your function to process the downloaded data
-            self.process_ERA5(year, 
+            self.process_ERA5(
+                        year, 
                         month, 
-                        day, 
-                        self.time_interval, 
-                        self.spatial_resolution, 
-                        self.output_folder)  # Adjust parameters as necessary
+                        day)  # Adjust parameters as necessary
         except Exception as e:
             print(f"Error processing {year}-{month}-{day}: {e}")
 
