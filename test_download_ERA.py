@@ -13,8 +13,15 @@ from EnvArray.download.ERA5.request import ERA5DataDownloaderProcessor
 # Get and Process combined
 ERA5_path = os.path.join(output_folder, 'ERA5')
 os.makedirs(ERA5_path, exist_ok=True)
-ERA5DataDownloaderProcessor(start_date, end_date, time_interval, spatial_resolution, ERA5_path, n_jobs=3, delete_raw=False)
+ERA5_datamaker = ERA5DataDownloaderProcessor(start_date=start_date, 
+                            end_date=end_date, 
+                            output_folder=ERA5_path, 
+                            time_interval=time_interval, 
+                            spatial_resolution=spatial_resolution, 
+                            n_jobs=3, 
+                            delete_raw=False)
 
+ERA5_datamaker.get_ERA5_data_and_process()
 
 # First get, then process
 # get_ERA5_data(start_date, end_date, time_interval, spatial_resolution, os.path.join(output_folder, 'ERA5'))
