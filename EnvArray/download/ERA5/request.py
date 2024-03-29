@@ -9,13 +9,13 @@ import xarray as xr
 
 
 class ERA5DataDownloaderProcessor:
-    def __init__(self, start_date, end_date, output_folder, time_interval, spatial_resolution, n_jobs=1, 
+    def __init__(self, start_date, end_date, output_folder, time_interval, spatial_coarsen, n_jobs=1, 
                  delete_raw=False, download_skip_exist=True, process_skip_exist=True):
         self.start_date = start_date
         self.end_date = end_date
         self.output_folder = output_folder
         self.time_interval = time_interval
-        self.spatial_resolution = spatial_resolution
+        self.spatial_coarsen = spatial_coarsen
         self.n_jobs = n_jobs
         self.date_df = self.get_all_dates()
         self.delete_raw = delete_raw
@@ -116,7 +116,7 @@ class ERA5DataDownloaderProcessor:
         comb = xr.concat([aa,bb], dim='longitude')
 
         ## Spatial resample 3 to 1
-        coarsen_weight = int(float(self.spatial_resolution.split('km')[0])/9) # 30km/9km = ~ 3
+        coarsen_weight = self.spatial_coarsen # 30km/9km = ~ 3
         res = comb.coarsen(
             longitude = coarsen_weight, # 3 into 1
             latitude = coarsen_weight,
