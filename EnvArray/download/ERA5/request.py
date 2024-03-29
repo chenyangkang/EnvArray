@@ -9,7 +9,8 @@ import xarray as xr
 
 
 class ERA5DataDownloaderProcessor:
-    def __init__(self, start_date, end_date, output_folder, time_interval, spatial_resolution, n_jobs=1, delete_raw=False):
+    def __init__(self, start_date, end_date, output_folder, time_interval, spatial_resolution, n_jobs=1, 
+                 delete_raw=False, download_skip_exist=True, process_skip_exist=True):
         self.start_date = start_date
         self.end_date = end_date
         self.output_folder = output_folder
@@ -18,6 +19,8 @@ class ERA5DataDownloaderProcessor:
         self.n_jobs = n_jobs
         self.date_df = self.get_all_dates()
         self.delete_raw = delete_raw
+        self.download_skip_exist = download_skip_exist
+        self.process_skip_exist = process_skip_exist
 
         # check output folder
         os.makedirs(self.output_folder, exist_ok=True)
@@ -40,6 +43,37 @@ class ERA5DataDownloaderProcessor:
 
         # Using Joblib to parallelize the downloading and processing
         Parallel(n_jobs=self.n_jobs)(delayed(self.get_data_and_process)(date) for date in dates)
+
+    def get_data_and_process(self, date_tuple):
+        year, month, day = date_tuple
+        try:
+            # Decide whether download
+            download_flag = True
+            if self.download_skip_exist:
+                if os.path.exists(os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}.nc')):
+                    print(f'Download exists: download_ERA5_{year}_{month}_{day}.nc')
+                    download_flag = False
+                if os.path.exists(os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}_processed.nc')):
+                    if self.process_skip_exist:
+                        download_flag = False
+
+            # download
+            if download_flag:
+                self.get_data(year, month, day)
+            
+            # Decide whether process
+            process_flag=True
+            if self.process_skip_exist:
+                if os.path.exists(os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}_processed.nc')):
+                    print(f'Processed exists: download_ERA5_{year}_{month}_{day}.nc')
+                    download_flag = False
+
+            # process
+            if process_flag:
+                self.process_ERA5(year, month, day)
+                
+        except Exception as e:
+            print(f"Error processing {year}-{month}-{day}: {e}")
 
     def get_data(self,year,month,day):
         c=cdsapi.Client()
@@ -69,20 +103,6 @@ class ERA5DataDownloaderProcessor:
             },
             os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}.nc')
         )
-
-    def get_data_and_process(self, date_tuple):
-        year, month, day = date_tuple
-        try:
-            self.get_data(year, month, day)
-            
-            # Assuming process_ERA5 is your function to process the downloaded data
-            self.process_ERA5(
-                        year, 
-                        month, 
-                        day)  # Adjust parameters as necessary
-        except Exception as e:
-            print(f"Error processing {year}-{month}-{day}: {e}")
-
 
     def process_ERA5(self, year, month, day):
         data = xr.open_dataset(os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}.nc'))

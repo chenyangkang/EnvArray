@@ -36,7 +36,9 @@ ERA5_datamaker = ERA5DataDownloaderProcessor(start_date=start_date,
                             time_interval=time_interval, 
                             spatial_resolution=spatial_resolution, 
                             n_jobs=3, 
-                            delete_raw=False)
+                            delete_raw=True, 
+                            download_skip_exist=True,
+                            process_skip_exist=True)
 
 ERA5_datamaker.get_ERA5_data_and_process()
 
