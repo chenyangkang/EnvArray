@@ -2,6 +2,7 @@ import cdsapi
 import pandas as pd
 import datetime
 import os
+from joblib import Parallel, delayed
 from .process import process_ERA5
 
 
@@ -48,31 +49,29 @@ def get_data(year,month,day,output_folder):
         os.path.join(output_folder, f'download_ERA5_{year}_{month}_{day}.nc')
     )
 
+def get_data_and_process(date_tuple, output_folder, time_interval, spatial_resolution):
+    year, month, day = date_tuple
+    try:
+        get_data(year, month, day, output_folder)
+        
+        # Assuming process_ERA5 is your function to process the downloaded data
+        process_ERA5(year, 
+                     month, 
+                     day, 
+                     time_interval, 
+                     spatial_resolution, 
+                     output_folder)  # Adjust parameters as necessary
+    except Exception as e:
+        print(f"Error processing {year}-{month}-{day}: {e}")
 
-def get_ERA5_data_and_process(start_date, end_date, time_interval, spatial_resolution, output_folder):
+
+def get_ERA5_data_and_process(start_date, end_date, time_interval, spatial_resolution, output_folder, n_jobs=1):
     date_df = get_all_dates(start_date, end_date)
-    for year in date_df.year.unique():
-        sub = date_df[date_df.year==year]
-        for month in sub.month.unique():
-            subsub = sub[sub.month==month]
-            for day in subsub.day.unique():
+    dates = [(str(year), str(month).zfill(2), str(day).zfill(2)) for year, month, day in zip(date_df.year, date_df.month, date_df.day)]
 
-                try:
-                    get_data(str(year),
-                            str(month).zfill(2),
-                            str(day).zfill(2),
-                            output_folder)
-                    
-                    process_ERA5(str(year), 
-                                str(month).zfill(2), 
-                                str(day).zfill(2), 
-                                time_interval, 
-                                spatial_resolution, 
-                                output_folder) # aggregate to 1 day and 30 km
-                    
-                except Exception as e:
-                    print(e)
-                    continue
+    # Using Joblib to parallelize the downloading and processing
+    Parallel(n_jobs=n_jobs)(delayed(get_data_and_process)(date, output_folder, time_interval, spatial_resolution) for date in dates)
+
 
 
 # def get_ERA5_data(start_date, end_date, time_interval, spatial_resolution, output_folder):
