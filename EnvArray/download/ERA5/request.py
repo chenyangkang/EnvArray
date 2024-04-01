@@ -66,7 +66,7 @@ class ERA5DataDownloaderProcessor:
             if self.process_skip_exist:
                 if os.path.exists(os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}_processed.nc')):
                     print(f'Processed exists: download_ERA5_{year}_{month}_{day}.nc')
-                    download_flag = False
+                    process_flag = False
 
             # process
             if process_flag:
