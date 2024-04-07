@@ -8,7 +8,7 @@ import xarray as xr
 
 
 
-class ERA5DataDownloaderProcessor:
+class ERA5DataDailyRequestProcessor:
     def __init__(self, start_date, end_date, output_folder, time_interval, spatial_coarsen, n_jobs=1, 
                  delete_raw=False, download_skip_exist=True, process_skip_exist=True):
         self.start_date = start_date
@@ -18,6 +18,9 @@ class ERA5DataDownloaderProcessor:
         self.spatial_coarsen = spatial_coarsen
         self.n_jobs = n_jobs
         self.date_df = self.get_all_dates()
+        self.date_df['year'] = self.date_df['year'].astype('str')
+        self.date_df['month'] = self.date_df['year'].astype('str')
+        self.date_df['day'] = self.date_df['year'].astype('str')
         self.delete_raw = delete_raw
         self.download_skip_exist = download_skip_exist
         self.process_skip_exist = process_skip_exist

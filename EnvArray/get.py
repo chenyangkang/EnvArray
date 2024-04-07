@@ -24,7 +24,7 @@ def get_spatiotemporal_data(
 def download_data(start_date, end_date, time_interval, spatial_resolution, output_folder):
     
     ### For EAR5 data
-    from .download.ERA5.request import get_ERA5_data_and_process
+    from .download.ERA5.daily_request_daily_processor import get_ERA5_data_and_process
     get_ERA5_data_and_process(start_date, end_date, time_interval, spatial_resolution, os.path.join(output_folder, 'ERA5'))
 
     ### For land cover data

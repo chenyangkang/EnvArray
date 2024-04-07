@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 
 
-def request_one_year(year):
+def request_one_year_one_month(year, month):
     c=cdsapi.Client()
     c.retrieve(
             'reanalysis-era5-single-levels',
@@ -41,15 +41,23 @@ def request_one_year(year):
                     'significant_height_of_combined_wind_waves_and_swell','mean_wave_direction'
                 ],
                 'year':year,
-                'month':['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
+                'month':month,
                 'day':['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'],
                 'time':['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00',
                         '09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00',
                         '17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
             },
-            os.path.join(args.output_folder, f'download_ERA5_{year}.nc')
+            os.path.join(args.output_folder, f'download_ERA5_{year}_{month}.nc')
         )
 
 
-Parallel(n_jobs=int(args.njobs))(delayed(request_one_year)(year) for year in list(range(args.from_year, args.to_year+1)))
+
+year_list = list(range(args.from_year, args.to_year+1))
+month_list = list(range(1,13))
+
+from itertools import product
+all_combinations = list(product(year_list, month_list))
+
+Parallel(n_jobs=int(args.njobs))(delayed(request_one_year_one_month)(str(year_month[0]).zfill(2), str(year_month[1]).zfill(2)) for year_month in all_combinations)
+
 
