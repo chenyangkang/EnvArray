@@ -18,9 +18,9 @@ class ERA5DataDailyRequestProcessor:
         self.spatial_coarsen = spatial_coarsen
         self.n_jobs = n_jobs
         self.date_df = self.get_all_dates()
-        self.date_df['year'] = self.date_df['year'].astype('str')
-        self.date_df['month'] = self.date_df['year'].astype('str')
-        self.date_df['day'] = self.date_df['year'].astype('str')
+        self.date_df['year'] = self.date_df['year'].astype('int')
+        self.date_df['month'] = self.date_df['month'].astype('int')
+        self.date_df['day'] = self.date_df['day'].astype('int')
         self.delete_raw = delete_raw
         self.download_skip_exist = download_skip_exist
         self.process_skip_exist = process_skip_exist
