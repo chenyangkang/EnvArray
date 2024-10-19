@@ -27,7 +27,7 @@ class ERA5DataDailyRequestProcessor:
 
         # check output folder
         os.makedirs(self.output_folder, exist_ok=True)
-        
+
 
     def get_all_dates(self):
         date_list = [datetime.datetime.strptime('1970-01-01','%Y-%m-%d')+datetime.timedelta(days=i) for i in range(99999)]
@@ -39,6 +39,7 @@ class ERA5DataDailyRequestProcessor:
         request_df = request_df[
             (request_df['date']>=pd.to_datetime(self.start_date)) & (request_df['date']<=pd.to_datetime(self.end_date))
         ]
+        print(request_df)
         return request_df
 
     def get_ERA5_data_and_process(self):
@@ -49,6 +50,7 @@ class ERA5DataDailyRequestProcessor:
 
     def get_data_and_process(self, date_tuple):
         year, month, day = date_tuple
+        # print(date_tuple)
         try:
             # Decide whether download
             download_flag = True
@@ -77,7 +79,6 @@ class ERA5DataDailyRequestProcessor:
                 
         except Exception as e:
             print(f"Error processing {year}-{month}-{day}: {e}")
-
 
     def get_data(self,year,month,day):
         
@@ -121,17 +122,22 @@ class ERA5DataDailyRequestProcessor:
                     '17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
             "data_format": "netcdf",
             "download_format": "unarchived"
+                
         }
 
         c=cdsapi.Client()
-        c.retrieve(dataset, request,
-            os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}.nc')
-        )
-                
-
+        
+        nc_zip_output_dir = os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}.nc.zip')
+        c.retrieve(dataset, request, nc_zip_output_dir)
+        
+        import time
+        time.sleep(3)
+        
+        self.unzip(nc_zip_output_dir, self.output_folder, f'{year}-{month}-{day}', f'download_ERA5_{year}_{month}_{day}.nc')
+        
     def process_ERA5(self, year, month, day):
-        data = xr.open_dataset(os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}.nc'))
-
+        data = xr.open_dataset(os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}.nc'), engine='h5netcdf')
+        data = data.rename({'valid_time': 'time'})
         comb = data.resample(time=self.time_interval).mean()
 
         ## transforming the longitude to -180, 180
@@ -149,7 +155,8 @@ class ERA5DataDailyRequestProcessor:
         ).mean()
 
         ## Saving
-        res.to_netcdf(os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}_processed.nc'))
+        nc_zip_output_dir_ = os.path.join(self.output_folder, f'download_ERA5_{year}_{month}_{day}_processed.nc')
+        res.to_netcdf(nc_zip_output_dir_)
 
         if self.delete_raw:
             try:
@@ -157,42 +164,22 @@ class ERA5DataDailyRequestProcessor:
             except Exception as e:
                 print(f'Delete raw download_ERA5_{year}_{month}_{day}.nc fail: {e}')
 
-
-## Aggregate to 1D
-# a = data[['u10','v10','t2m','sp','tcc','tp']].resample(time=time_interval).mean().rename({
-#     'u10':'mean_u10',
-#     'v10':'mean_v10',
-#     't2m':'mean_t2m',
-#     'sp':'mean_sp',
-#     'tcc':'mean_tcc',
-#     'tp':'mean_tp',
-# })
-
-# b = data[['t2m']].resample(time=time_interval).max().rename({
-#     't2m':'max_t2m',
-# })
-
-# c = data[['t2m']].resample(time=time_interval).min().rename({
-#     't2m':'min_t2m',
-# })
-
-# comb = xr.combine_by_coords([
-#     a,b,c
-# ])
+    def unzip(self, nc_zip_output_dir, tmp_output_path, marker, desired_name):
+        import zipfile
+        import shutil
         
+        # Path to your zip file
+        zip_path = nc_zip_output_dir
 
-# def get_ERA5_data(start_date, end_date, time_interval, spatial_resolution, output_folder):
-#     date_df = get_all_dates(start_date, end_date)
-#     for year in date_df.year.unique():
-#         sub = date_df[date_df.year==year]
-#         for month in sub.month.unique():
-#             subsub = sub[sub.month==month]
-#             get_data(year,month,subsub,output_folder)
+        # Extract the NetCDF file from the zip
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            
+            # Extract all contents or a specific file
+            zip_ref.extractall(os.path.join(tmp_output_path, marker))  # Adjust path if needed
+            
+            shutil.move(os.path.join(tmp_output_path, marker, 'data_stream-oper.nc'), os.path.join(tmp_output_path, desired_name))
 
-# def ERA5_process(start_date, end_date, time_interval, spatial_resolution, output_folder):
-#     date_df = get_all_dates(start_date, end_date)
-#     for year in date_df.year.unique():
-#         sub = date_df[date_df.year==year]
-#         for month in sub.month.unique():
-#             subsub = sub[sub.month==month]
-#             process_ERA5(year, month, time_interval, spatial_resolution, output_folder) # aggregate to 1 day and 50 km
+            shutil.rmtree(os.path.join(tmp_output_path, marker))
+
+        os.remove(zip_path)
+            
